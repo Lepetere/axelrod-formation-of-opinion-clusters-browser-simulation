@@ -1,1 +1,28 @@
 /* ---- layout rules ---- */
+
+#main-grid-container {
+  height: 500px;
+  width: 500px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -250px;
+  margin-left: -250px;
+  background-color: red;
+}
+
+.grid-cell {
+  height: 50px;
+  width: 50px;
+  position: static;
+  float: left;
+}
+
+#start-button {
+  width: 60px;
+  height: 20px;
+  position: absolute;
+  left: 50%;
+  margin-left: -30px;
+  bottom: 50px;
+}
