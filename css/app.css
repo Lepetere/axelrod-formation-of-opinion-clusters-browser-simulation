@@ -21,7 +21,7 @@ body {
 
 /* ---- layout rules ---- */
 
-#main-grid-container {
+.grid-container {
   height: 500px;
   width: 500px;
   position: absolute;
@@ -30,6 +30,11 @@ body {
   margin-top: -250px;
   margin-left: -250px;
   background-color: red;
+}
+
+.grid {
+  height: 500px;
+  width: 500px;
 }
 
 .grid-cell {
