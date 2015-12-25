@@ -3,3 +3,7 @@
 .clickable {
   cursor: pointer;
 }
+
+.button-active {
+  color: #b30000;
+}

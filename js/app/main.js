@@ -1,3 +1,1 @@
-$(document).ready(function () {
-  APP.UI.init();
-});
+APP.UI.init();

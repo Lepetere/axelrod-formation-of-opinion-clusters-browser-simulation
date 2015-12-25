@@ -1,6 +1,6 @@
 /* ---- layout rules ---- */
 
-.grid-container {
+.grid {
   height: 500px;
   width: 500px;
   position: absolute;
@@ -8,12 +8,6 @@
   left: 50%;
   margin-top: -250px;
   margin-left: -250px;
-  background-color: red;
-}
-
-.grid {
-  height: 500px;
-  width: 500px;
 }
 
 .grid-cell {
@@ -23,11 +17,11 @@
   float: left;
 }
 
-#start-button {
-  width: 60px;
-  height: 20px;
+.button-container {
   position: absolute;
   left: 50%;
-  margin-left: -30px;
   bottom: 50px;
+  width: 400px;
+  margin-left: -200px;
+  text-align: center;
 }

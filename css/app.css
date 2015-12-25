@@ -8,7 +8,7 @@ html {
   width: 100%;
 }
 
-body {
+body, .main-container, .main-interface {
   padding: 0px;
   margin: 0px;
   position: relative;
@@ -16,12 +16,33 @@ body {
   width: 100%;
 }
 
+select {
+  background: transparent;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -o-appearance: none;
+  text-indent: 0.01px;
+  text-overflow: "";
+  appearance: none;
+}
+select::-ms-expand {
+  display: none;
+}
+select:focus {
+  outline: none;
+}
+
 /* ---- display rules ---- */
 
-
+.text-button {
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #444;
+}
 /* ---- layout rules ---- */
 
-.grid-container {
+.grid {
   height: 500px;
   width: 500px;
   position: absolute;
@@ -29,12 +50,6 @@ body {
   left: 50%;
   margin-top: -250px;
   margin-left: -250px;
-  background-color: red;
-}
-
-.grid {
-  height: 500px;
-  width: 500px;
 }
 
 .grid-cell {
@@ -44,17 +59,21 @@ body {
   float: left;
 }
 
-#start-button {
-  width: 60px;
-  height: 20px;
+.button-container {
   position: absolute;
   left: 50%;
-  margin-left: -30px;
   bottom: 50px;
+  width: 400px;
+  margin-left: -200px;
+  text-align: center;
 }
 
 /* ---- state rules ---- */
 
 .clickable {
   cursor: pointer;
+}
+
+.button-active {
+  color: #b30000;
 }

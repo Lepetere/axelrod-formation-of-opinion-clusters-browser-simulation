@@ -1,2 +1,7 @@
 /* ---- display rules ---- */
 
+.text-button {
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #444;
+}

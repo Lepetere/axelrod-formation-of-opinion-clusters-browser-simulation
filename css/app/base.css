@@ -8,10 +8,27 @@ html {
   width: 100%;
 }
 
-body {
+body, .main-container, .main-interface {
   padding: 0px;
   margin: 0px;
   position: relative;
   height: 100%;
   width: 100%;
+}
+
+select {
+  background: transparent;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -o-appearance: none;
+  text-indent: 0.01px;
+  text-overflow: "";
+  appearance: none;
+}
+select::-ms-expand {
+  display: none;
+}
+select:focus {
+  outline: none;
 }

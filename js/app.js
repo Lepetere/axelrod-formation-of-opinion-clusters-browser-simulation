@@ -6,12 +6,12 @@ APP.UI = (function () {
   var HORIZONTAL_GRID_DIMENSION = 10,
     VERTICAL_GRID_DIMENSION = 10,
     NUMBER_OF_GRID_CELLS = HORIZONTAL_GRID_DIMENSION * VERTICAL_GRID_DIMENSION,
-    SVG_WIDTH, // set in 'init'
-    SVG_HEIGHT,
+    SVG_WIDTH = 500, // TO DO: do not duplicate this information from css
+    SVG_HEIGHT = 500, // TO DO: do not duplicate this information from css
     NUMBER_OF_OPINION_DIMENSIONS = 2, // the number of features that each cell has
     NUMBER_OF_TRAITS = 5; // the number of traits 
 
-  var grid;
+  var ui;
 
   var GridCell = React.createClass({
     displayName: "GridCell",
@@ -21,7 +21,7 @@ APP.UI = (function () {
       generateColor: function (showTrait, traits, showOpinionDimensionNumber) {
         if (showTrait) {
           var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
-            traitTone = tones[Math.floor((traits[showOpinionDimensionNumber] / NUMBER_OF_TRAITS) * 16)];
+            traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / NUMBER_OF_TRAITS) * 16)];
           return '#F' + traitTone + traitTone;
         }
         else {
@@ -38,16 +38,11 @@ APP.UI = (function () {
       }
 
       return {
-        // initially show the state  of the first opinion dimension (the first feature's trait)
-        showOpinionDimensionNumber: 1,
-        // indicates if the trait of a particular feature or the similarity between neighbors is displayed
-        // set to true for the traits and to false for the similarity
-        showTrait: true,
         traits: traits
       };
     },
 
-    shouldComponentUpdate: function () {
+    shouldComponentUpdate: function (nextProps, nextState) {
       return true;
     },
 
@@ -56,7 +51,7 @@ APP.UI = (function () {
 
       return React.DOM.rect({
         className: 'grid-cell',
-        fill: this.constructor.generateColor(this.state.showTrait, this.state.traits, this.state.showOpinionDimensionNumber),
+        fill: this.constructor.generateColor(this.props.showTrait, this.state.traits, this.props.showOpinionDimensionNumber),
         x: (SVG_WIDTH / HORIZONTAL_GRID_DIMENSION) * (position % HORIZONTAL_GRID_DIMENSION),
         y: (SVG_HEIGHT / VERTICAL_GRID_DIMENSION) * ((position - (position % VERTICAL_GRID_DIMENSION)) / VERTICAL_GRID_DIMENSION)
       });
@@ -66,14 +61,19 @@ APP.UI = (function () {
   var Grid = React.createClass({
     displayName: "Grid",
 
-    shouldComponentUpdate: function () {
+    shouldComponentUpdate: function (nextProps, nextState) {
       return true;
     },
 
     render: function render () {
       var gridCells = [];
       for ( var i = 0; i < this.props.numberOfGridCells; i ++ ) {
-        gridCells.push(React.createElement(GridCell, { position: i, key: i }));
+        gridCells.push(React.createElement(GridCell, {
+          position: i,
+          key: i,
+          showTrait: this.props.showTrait,
+          showOpinionDimensionNumber: this.props.showOpinionDimensionNumber
+        }));
       }
 
       return (
@@ -82,25 +82,91 @@ APP.UI = (function () {
     }
   });
 
+  var MainInterface = React.createClass({
+    displayName: "MainInterface",
+
+    getInitialState: function () {
+      var traits = [];
+      for ( var i = 0; i < NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
+        traits.push(Math.floor(Math.random() * NUMBER_OF_TRAITS));
+      }
+
+      return {
+        // initially show the state  of the first opinion dimension (the first feature's trait)
+        showOpinionDimensionNumber: 1,
+        // indicates if the trait of a particular feature or the similarity between neighbors is displayed
+        // set to true for the traits and to false for the similarity
+        showTrait: true
+      };
+    },
+
+    handleStartClick: function (event) {
+      console.log("start button pressed");
+    },
+
+    handleShowSimilarityClick: function (event) {
+      this.setState({ showTrait: ! this.state.showTrait });
+    },
+
+    handleFeatureSelectClick: function (event) {
+      this.setState({ showTrait: true });
+    },
+
+    handleSelectedFeatureChanged: function (event) {
+      this.setState({ showOpinionDimensionNumber: event.target.value });
+    },
+
+    shouldComponentUpdate: function (nextProps, nextState) {
+      return nextState.showTrait !== this.state.showTrait ||
+        nextState.showOpinionDimensionNumber !== this.state.showOpinionDimensionNumber;
+    },
+
+    render: function render () {
+      var featureSelectOptions = [];
+      for ( var i = 1; i <= NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
+        featureSelectOptions.push(React.DOM.option({ key: 'feature_' + i, value: i }, "show feature #" + i));
+      }
+
+      return (
+        React.DOM.div({ id: 'main-interface', className: 'main-interface' }, 
+          React.createElement(Grid, { 
+            numberOfGridCells: NUMBER_OF_GRID_CELLS,
+            showTrait: this.state.showTrait,
+            showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
+          }),
+          React.DOM.div({ id: 'button-container', className: 'button-container' },
+            React.DOM.a({
+              id: 'start-button',
+              className: 'text-button clickable',
+              onClick: this.handleStartClick
+            }, "Start simulation"),
+            " | ",
+            React.DOM.select({
+              id: 'feature-select',
+              className: classNames('text-button', 'clickable', { 'button-active': this.state.showTrait }),
+              onChange: this.handleSelectedFeatureChanged,
+              onClick: this.handleFeatureSelectClick
+            }, featureSelectOptions),
+            " | ",
+            React.DOM.a({
+              className: classNames('text-button', 'clickable', { 'button-active': ! this.state.showTrait }),
+              onClick: this.handleShowSimilarityClick
+            }, "Show similarity")))
+      );
+    }
+  });
+
   var init = function () {
-    SVG_WIDTH = $('.grid-container').outerWidth(false); // set in CSS
-    SVG_HEIGHT = $('.grid-container').outerHeight(false); // set in CSS
-    $('#start-button').click(initGrid);
-    initGrid();
+    ui = ReactDOM.render(
+      React.createElement(MainInterface),
+      document.getElementById('main-container')
+    );
   };
 
-  function initGrid () {
-    grid = ReactDOM.render(
-      React.createElement(Grid, { numberOfGridCells: NUMBER_OF_GRID_CELLS }),
-      document.getElementById('grid-container'));
-  }
-	
-  var module = {};
-  module.init = init;
-  return module;
+  return {
+    init: init
+  };
 })();
 ;
 
-$(document).ready(function () {
-  APP.UI.init();
-});
+APP.UI.init();
