@@ -42,10 +42,6 @@ APP.UI = (function () {
       };
     },
 
-    shouldComponentUpdate: function (nextProps, nextState) {
-      return true;
-    },
-
     render: function render () {
       var position = this.props.position;
 
@@ -60,10 +56,6 @@ APP.UI = (function () {
 
   var Grid = React.createClass({
     displayName: "Grid",
-
-    shouldComponentUpdate: function (nextProps, nextState) {
-      return true;
-    },
 
     render: function render () {
       var gridCells = [];
@@ -122,7 +114,14 @@ APP.UI = (function () {
     },
 
     render: function render () {
-      var featureSelectOptions = [];
+      var description_pt1 = "This is an implementation of a model simulating opinion diversity and clustering in a society " + 
+        "as proposed by the american political scientist Robert Axelrod. The model simulates social self-organization " +
+        "through the interplay of the two phenomena social influence and homophily.",
+        description_pt2 = "Every square that you see in the middle of the window represents a cell which has an opinion, " +
+        "called trait, about a limited amount of opinion dimensions, called features. If you press 'start simulation', " +
+        "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
+        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
+        featureSelectOptions = [];
       for ( var i = 1; i <= NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
         featureSelectOptions.push(React.DOM.option({ key: 'feature_' + i, value: i }, "show feature #" + i));
       }
@@ -134,12 +133,20 @@ APP.UI = (function () {
             showTrait: this.state.showTrait,
             showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
           }),
+          React.DOM.a({
+            id: 'about-tooltip',
+            className: 'about-tooltip text-button'
+          }, "What is this?",
+          React.DOM.span({ className: 'tooltip-content' },
+            description_pt1, React.DOM.br(), React.DOM.br(),
+            description_pt2, React.DOM.br(), React.DOM.br(),
+            description_pt3)),
           React.DOM.div({ id: 'button-container', className: 'button-container' },
             React.DOM.a({
               id: 'start-button',
               className: 'text-button clickable',
               onClick: this.handleStartClick
-            }, "Start simulation"),
+            }, "start simulation"),
             " | ",
             React.DOM.select({
               id: 'feature-select',
@@ -151,7 +158,7 @@ APP.UI = (function () {
             React.DOM.a({
               className: classNames('text-button', 'clickable', { 'button-active': ! this.state.showTrait }),
               onClick: this.handleShowSimilarityClick
-            }, "Show similarity")))
+            }, "show similarity")))
       );
     }
   });
