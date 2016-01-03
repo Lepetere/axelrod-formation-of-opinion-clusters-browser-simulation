@@ -63,7 +63,9 @@ APP.simulation = (function () {
       return [ upperNeighbor, rightNeighbor, lowerNeighbor, leftNeighbor ];
     }
     else {
-      throw new Error("getNeighborPositions() must be called with an index within the boundaries of the cell array length");
+      var message = "getNeighborPositions() must be called with an index within the boundaries of the cell array length " +
+        "but was called with position " + cellPosition;
+      throw new Error(message);
     }
   };
 

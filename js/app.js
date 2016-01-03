@@ -3,8 +3,8 @@ var APP = APP || {};
 APP.UI = (function () {
 
   // 'constants'
-  var SVG_WIDTH = 500, // TO DO: do not duplicate this information from css
-    SVG_HEIGHT = 500; // TO DO: do not duplicate this information from css
+  var SVG_WIDTH = 500,
+    SVG_HEIGHT = 500;
 
   var ui, cells;
 
@@ -13,38 +13,41 @@ APP.UI = (function () {
 
     statics: {
       // generates a color to represent the trait of the currently selected feature
-      generateColor: function (showTrait, traits, showOpinionDimensionNumber) {
+      generateColor: function (showTrait, traits, showOpinionDimensionNumber, cellPosition) {
+        var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+
         if (showTrait) {
-          var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
-            traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.numberOfTraits) * 16)];
+          var traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.numberOfTraits) * 16)];
           return '#F' + traitTone + traitTone;
         }
         else {
-          // just return white for now for the similarity of neighbors // TO DO
-          return '#FFF';
+          var numberOfTraits = APP.simulation.numberOfTraits,
+            amountOfMatchingTraits = 0,
+            ratioOfMatchingTraits,
+            traitTone;
+
+          APP.simulation.getNeighborPositions(cellPosition).forEach(function (cellPosition) {
+            cells[cellPosition].props.traits.forEach(function (neighborTrait, index) {
+              if (neighborTrait == traits[index]) amountOfMatchingTraits ++;
+            });
+          });
+
+          ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * numberOfTraits);
+          traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
+          return traitTone + traitTone + traitTone;
         }
       }
-    },
-
-    getInitialState: function () {
-      var traits = [];
-      for ( var i = 0; i < APP.simulation.numberOfOpinionDimensions; i ++ ) {
-        traits.push(Math.floor(Math.random() * APP.simulation.numberOfTraits));
-      }
-
-      return {
-        traits: traits
-      };
     },
 
     render: function render () {
       var position = this.props.position,
+        showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
         verticalGridDimension = APP.simulation.verticalGridDimension,
         horizontalGridDimension = APP.simulation.horizontalGridDimension;
 
       return React.DOM.rect({
         className: 'grid-cell',
-        fill: this.constructor.generateColor(this.props.showTrait, this.state.traits, this.props.showOpinionDimensionNumber),
+        fill: this.constructor.generateColor(this.props.showTrait, this.props.traits, showOpinionDimensionNumber, position),
         x: (SVG_WIDTH / horizontalGridDimension) * (position % horizontalGridDimension),
         y: (SVG_HEIGHT / verticalGridDimension) * ((position - (position % verticalGridDimension)) / verticalGridDimension)
       });
@@ -54,19 +57,30 @@ APP.UI = (function () {
   var Grid = React.createClass({
     displayName: "Grid",
 
+    statics: {
+      generateRandomTraits: function (numberOfOpinionDimensions, numberOfTraits) {
+        var traits = [];
+        for ( var i = 0; i < numberOfOpinionDimensions; i ++ ) {
+          traits.push(Math.floor(Math.random() * numberOfTraits));
+        }
+        return traits;
+      }
+    },
+
     render: function render () {
-      var gridCells = [];
+      cells = [];
       for ( var i = 0; i < this.props.numberOfGridCells; i ++ ) {
-        gridCells.push(React.createElement(GridCell, {
+        cells.push(React.createElement(GridCell, {
           position: i,
           key: i,
+          traits: this.constructor.generateRandomTraits(APP.simulation.numberOfOpinionDimensions, APP.simulation.numberOfTraits),
           showTrait: this.props.showTrait,
           showOpinionDimensionNumber: this.props.showOpinionDimensionNumber
         }));
       }
 
       return (
-        React.createElement('svg', { className: 'grid' }, gridCells)
+        React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells)
       );
     }
   });
@@ -238,7 +252,9 @@ APP.simulation = (function () {
       return [ upperNeighbor, rightNeighbor, lowerNeighbor, leftNeighbor ];
     }
     else {
-      throw new Error("getNeighborPositions() must be called with an index within the boundaries of the cell array length");
+      var message = "getNeighborPositions() must be called with an index within the boundaries of the cell array length " +
+        "but was called with position " + cellPosition;
+      throw new Error(message);
     }
   };
 
