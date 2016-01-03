@@ -3,15 +3,10 @@ var APP = APP || {};
 APP.UI = (function () {
 
   // 'constants'
-  var HORIZONTAL_GRID_DIMENSION = 10,
-    VERTICAL_GRID_DIMENSION = 10,
-    NUMBER_OF_GRID_CELLS = HORIZONTAL_GRID_DIMENSION * VERTICAL_GRID_DIMENSION,
-    SVG_WIDTH = 500, // TO DO: do not duplicate this information from css
-    SVG_HEIGHT = 500, // TO DO: do not duplicate this information from css
-    NUMBER_OF_OPINION_DIMENSIONS = 2, // the number of features that each cell has
-    NUMBER_OF_TRAITS = 5; // the number of traits 
+  var SVG_WIDTH = 500, // TO DO: do not duplicate this information from css
+    SVG_HEIGHT = 500; // TO DO: do not duplicate this information from css
 
-  var ui;
+  var ui, cells;
 
   var GridCell = React.createClass({
     displayName: "GridCell",
@@ -21,7 +16,7 @@ APP.UI = (function () {
       generateColor: function (showTrait, traits, showOpinionDimensionNumber) {
         if (showTrait) {
           var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
-            traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / NUMBER_OF_TRAITS) * 16)];
+            traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.numberOfTraits) * 16)];
           return '#F' + traitTone + traitTone;
         }
         else {
@@ -33,8 +28,8 @@ APP.UI = (function () {
 
     getInitialState: function () {
       var traits = [];
-      for ( var i = 0; i < NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
-        traits.push(Math.floor(Math.random() * NUMBER_OF_TRAITS));
+      for ( var i = 0; i < APP.simulation.numberOfOpinionDimensions; i ++ ) {
+        traits.push(Math.floor(Math.random() * APP.simulation.numberOfTraits));
       }
 
       return {
@@ -43,13 +38,15 @@ APP.UI = (function () {
     },
 
     render: function render () {
-      var position = this.props.position;
+      var position = this.props.position,
+        verticalGridDimension = APP.simulation.verticalGridDimension,
+        horizontalGridDimension = APP.simulation.horizontalGridDimension;
 
       return React.DOM.rect({
         className: 'grid-cell',
         fill: this.constructor.generateColor(this.props.showTrait, this.state.traits, this.props.showOpinionDimensionNumber),
-        x: (SVG_WIDTH / HORIZONTAL_GRID_DIMENSION) * (position % HORIZONTAL_GRID_DIMENSION),
-        y: (SVG_HEIGHT / VERTICAL_GRID_DIMENSION) * ((position - (position % VERTICAL_GRID_DIMENSION)) / VERTICAL_GRID_DIMENSION)
+        x: (SVG_WIDTH / horizontalGridDimension) * (position % horizontalGridDimension),
+        y: (SVG_HEIGHT / verticalGridDimension) * ((position - (position % verticalGridDimension)) / verticalGridDimension)
       });
     }
   });
@@ -78,11 +75,6 @@ APP.UI = (function () {
     displayName: "MainInterface",
 
     getInitialState: function () {
-      var traits = [];
-      for ( var i = 0; i < NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
-        traits.push(Math.floor(Math.random() * NUMBER_OF_TRAITS));
-      }
-
       return {
         // initially show the state  of the first opinion dimension (the first feature's trait)
         showOpinionDimensionNumber: 1,
@@ -93,7 +85,11 @@ APP.UI = (function () {
     },
 
     handleStartClick: function (event) {
-      console.log("start button pressed");
+      APP.simulation.isSimulationRunning = ! APP.simulation.isSimulationRunning;
+
+      if (APP.simulation.isSimulationRunning) {
+        setTimeout(APP.simulation.runSimulationStep, APP.simulation.simulationTimeStep, cells);
+      }
     },
 
     handleShowSimilarityClick: function (event) {
@@ -122,14 +118,15 @@ APP.UI = (function () {
         "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
         description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
         featureSelectOptions = [];
-      for ( var i = 1; i <= NUMBER_OF_OPINION_DIMENSIONS; i ++ ) {
+
+      for ( var i = 1; i <= APP.simulation.numberOfOpinionDimensions; i ++ ) {
         featureSelectOptions.push(React.DOM.option({ key: 'feature_' + i, value: i }, "show feature #" + i));
       }
 
       return (
         React.DOM.div({ id: 'main-interface', className: 'main-interface' }, 
           React.createElement(Grid, { 
-            numberOfGridCells: NUMBER_OF_GRID_CELLS,
+            numberOfGridCells: APP.simulation.getNumberOfGridCells(),
             showTrait: this.state.showTrait,
             showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
           }),
@@ -172,6 +169,99 @@ APP.UI = (function () {
 
   return {
     init: init
+  };
+})();
+;
+
+var APP = APP || {};
+
+APP.simulation = (function () {
+
+  var numberOfOpinionDimensions = 2, // the number of features that each cell has
+    numberOfTraits = 5, // the number of traits that each cell can take for each feature
+    horizontalGridDimension = 10,
+    verticalGridDimension = 10,
+    simulationTimeStep = 50,
+    isSimulationRunning = false;
+
+  var getNumberOfGridCells = function () {
+    return horizontalGridDimension * verticalGridDimension;
+  };
+
+  /* 
+   * Returns an array of 4 neighbor's positions for a given 
+   * cell position in the cells array in the following format:
+   *
+   * [ upperNeighbor, rightNeighbor, lowerNeighbor, leftNeighbor ]
+   */
+  var getNeighborPositions = function (cellPosition) {
+    var cellArrayLength = getNumberOfGridCells();
+
+    if (cellPosition >= 0 && cellPosition < cellArrayLength) {
+      var upperNeighbor, rightNeighbor, lowerNeighbor, leftNeighbor;
+
+      // upper neighbor
+      if (cellPosition - horizontalGridDimension >= 0) {
+        upperNeighbor = cellPosition - horizontalGridDimension;
+      }
+      else {
+        upperNeighbor = cellArrayLength + cellPosition - horizontalGridDimension;
+      }
+
+      // right neighbor
+      if (cellPosition + 1 == cellArrayLength) {
+        rightNeighbor = 0;
+      }
+      else if (cellPosition + 1 % horizontalGridDimension !== 0) {
+        rightNeighbor = cellPosition + 1;
+      }
+      else {
+        rightNeighbor = cellPosition - horizontalGridDimension + 1;
+      }
+
+      // lower neighbor
+      if (cellPosition + horizontalGridDimension < cellArrayLength) {
+        lowerNeighbor = cellPosition + horizontalGridDimension;
+      }
+      else {
+        lowerNeighbor = cellPosition + horizontalGridDimension - cellArrayLength;
+      }
+
+      // left neighbor
+      if (cellPosition % horizontalGridDimension !== 0) {
+        leftNeighbor = cellPosition - 1;
+      }
+      else {
+        leftNeighbor = cellPosition + horizontalGridDimension - 1;
+      }
+
+      return [ upperNeighbor, rightNeighbor, lowerNeighbor, leftNeighbor ];
+    }
+    else {
+      throw new Error("getNeighborPositions() must be called with an index within the boundaries of the cell array length");
+    }
+  };
+
+  /* 
+   * Runs a step of the simulation.
+   *
+   * This function modifies the passed cells array.
+   */
+  var runSimulationStep = function (cells) {
+    if (isSimulationRunning) {
+      console.log("test run");
+    }
+  };
+
+  return {
+    runSimulationStep: runSimulationStep,
+    getNeighborPositions: getNeighborPositions,
+    isSimulationRunning: isSimulationRunning,
+    numberOfOpinionDimensions: numberOfOpinionDimensions,
+    numberOfTraits: numberOfTraits,
+    horizontalGridDimension: horizontalGridDimension,
+    verticalGridDimension: verticalGridDimension,
+    getNumberOfGridCells: getNumberOfGridCells
   };
 })();
 ;
