@@ -85,6 +85,31 @@ APP.UI = (function () {
     }
   });
 
+  var StartStopToggle = React.createClass({
+    displayName: "StartStopToggle",
+
+    getInitialState: function () {
+      return {
+        isSimulationRunning: false
+      };
+    },
+
+    handleStartStopClick: function (event) {
+      this.setState({ isSimulationRunning: ! this.state.isSimulationRunning });
+      APP.simulation.toggleIsSimulationRunning(cells);
+    },
+
+    render: function render () {
+      return (
+        React.DOM.a({
+          id: 'start-button',
+          className: 'text-button clickable',
+          onClick: this.handleStartStopClick
+        }, this.state.isSimulationRunning ? "stop simulation" : "start simulation")
+      );
+    }
+  });
+
   var MainInterface = React.createClass({
     displayName: "MainInterface",
 
@@ -96,14 +121,6 @@ APP.UI = (function () {
         // set to true for the traits and to false for the similarity
         showTrait: true
       };
-    },
-
-    handleStartClick: function (event) {
-      APP.simulation.isSimulationRunning = ! APP.simulation.isSimulationRunning;
-
-      if (APP.simulation.isSimulationRunning) {
-        setTimeout(APP.simulation.runSimulationStep, APP.simulation.simulationTimeStep, cells);
-      }
     },
 
     handleShowSimilarityClick: function (event) {
@@ -153,11 +170,7 @@ APP.UI = (function () {
             description_pt2, React.DOM.br(), React.DOM.br(),
             description_pt3)),
           React.DOM.div({ id: 'button-container', className: 'button-container' },
-            React.DOM.a({
-              id: 'start-button',
-              className: 'text-button clickable',
-              onClick: this.handleStartClick
-            }, "start simulation"),
+            React.createElement(StartStopToggle),
             " | ",
             React.DOM.select({
               id: 'feature-select',

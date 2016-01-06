@@ -69,21 +69,28 @@ APP.simulation = (function () {
     }
   };
 
+  var toggleIsSimulationRunning = function (cells) {
+    isSimulationRunning = ! isSimulationRunning;
+    if (isSimulationRunning) runSimulationStep(cells);
+  };
+
   /* 
-   * Runs a step of the simulation.
+   * Runs a step of the simulation and schedule the next one if the simulation is still running.
    *
    * This function modifies the passed cells array.
    */
   var runSimulationStep = function (cells) {
+    console.log("test run");
+
     if (isSimulationRunning) {
-      console.log("test run");
+      setTimeout(runSimulationStep, simulationTimeStep, cells);
     }
   };
 
   return {
-    runSimulationStep: runSimulationStep,
-    getNeighborPositions: getNeighborPositions,
+    toggleIsSimulationRunning: toggleIsSimulationRunning,
     isSimulationRunning: isSimulationRunning,
+    getNeighborPositions: getNeighborPositions,
     numberOfOpinionDimensions: numberOfOpinionDimensions,
     numberOfTraits: numberOfTraits,
     horizontalGridDimension: horizontalGridDimension,
