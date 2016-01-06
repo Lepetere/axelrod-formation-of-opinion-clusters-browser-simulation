@@ -13,6 +13,42 @@ APP.simulation = (function () {
     return horizontalGridDimension * verticalGridDimension;
   };
 
+  var getHorizontalGridDimension = function () {
+    return horizontalGridDimension;
+  };
+
+  var getVerticalGridDimension = function () {
+    return verticalGridDimension;
+  };
+
+  var getNumberOfOpinionDimensions = function () {
+    return numberOfOpinionDimensions;
+  };
+
+  var getNumberOfTraits = function () {
+    return numberOfTraits;
+  };
+
+  /*
+   * Sets horizontal and vertical grid dimension to the passed value.
+   */
+  var setGridDimension = function (dimension) {
+    horizontalGridDimension = dimension;
+    verticalGridDimension = dimension;
+  };
+
+  var setTimestep = function (timestepInMilliseconds) {
+    simulationTimeStep = timestepInMilliseconds;
+  };
+
+  var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
+    numberOfOpinionDimensions = newNumberOfOpinionDimensions;
+  };
+
+  var setNumberOfTraits = function (newNumberOfTraits) {
+    numberOfTraits = newNumberOfTraits;
+  };
+
   /* 
    * Returns an array of 4 neighbor's positions for a given 
    * cell position in the cells array in the following format:
@@ -91,10 +127,14 @@ APP.simulation = (function () {
     toggleIsSimulationRunning: toggleIsSimulationRunning,
     isSimulationRunning: isSimulationRunning,
     getNeighborPositions: getNeighborPositions,
-    numberOfOpinionDimensions: numberOfOpinionDimensions,
-    numberOfTraits: numberOfTraits,
-    horizontalGridDimension: horizontalGridDimension,
-    verticalGridDimension: verticalGridDimension,
-    getNumberOfGridCells: getNumberOfGridCells
+    getHorizontalGridDimension: getHorizontalGridDimension,
+    getVerticalGridDimension: getVerticalGridDimension,
+    setGridDimension: setGridDimension,
+    getNumberOfGridCells: getNumberOfGridCells,
+    setTimestep: setTimestep,
+    getNumberOfOpinionDimensions: getNumberOfOpinionDimensions,
+    setNumberOfOpinionDimensions: setNumberOfOpinionDimensions,
+    getNumberOfTraits: getNumberOfTraits,
+    setNumberOfTraits: setNumberOfTraits
   };
 })();

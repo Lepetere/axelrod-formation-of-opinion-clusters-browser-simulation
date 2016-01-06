@@ -57,7 +57,7 @@ select:focus {
   float: left;
 }
 
-.button-container {
+.center-button-container {
   position: absolute;
   left: 50%;
   bottom: 50px;
@@ -73,6 +73,18 @@ select:focus {
   left: 20px;
   color: #777;
   padding-bottom: 30px;
+}
+
+.simulation-property-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #777;
+}
+
+.simulation-property-controls > select {
+  display: block;
+  margin: 10px 0px;
 }
 
 .about-tooltip .tooltip-content {

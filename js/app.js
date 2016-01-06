@@ -17,11 +17,11 @@ APP.UI = (function () {
         var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
 
         if (showTrait) {
-          var traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.numberOfTraits) * 16)];
+          var traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.getNumberOfTraits()) * 16)];
           return '#F' + traitTone + traitTone;
         }
         else {
-          var numberOfTraits = APP.simulation.numberOfTraits,
+          var numberOfTraits = APP.simulation.getNumberOfTraits(),
             amountOfMatchingTraits = 0,
             ratioOfMatchingTraits,
             traitTone;
@@ -42,8 +42,8 @@ APP.UI = (function () {
     render: function render () {
       var position = this.props.position,
         showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
-        verticalGridDimension = APP.simulation.verticalGridDimension,
-        horizontalGridDimension = APP.simulation.horizontalGridDimension;
+        verticalGridDimension = APP.simulation.getVerticalGridDimension(),
+        horizontalGridDimension = APP.simulation.getHorizontalGridDimension();
 
       return React.DOM.rect({
         className: 'grid-cell',
@@ -68,12 +68,15 @@ APP.UI = (function () {
     },
 
     render: function render () {
+      var numberOfOpinionDimensions = APP.simulation.getNumberOfOpinionDimensions(),
+        numberOfTraits = APP.simulation.getNumberOfTraits();
+
       cells = [];
       for ( var i = 0; i < this.props.numberOfGridCells; i ++ ) {
         cells.push(React.createElement(GridCell, {
           position: i,
           key: i,
-          traits: this.constructor.generateRandomTraits(APP.simulation.numberOfOpinionDimensions, APP.simulation.numberOfTraits),
+          traits: this.constructor.generateRandomTraits(numberOfOpinionDimensions, numberOfTraits),
           showTrait: this.props.showTrait,
           showOpinionDimensionNumber: this.props.showOpinionDimensionNumber
         }));
@@ -135,6 +138,25 @@ APP.UI = (function () {
       this.setState({ showOpinionDimensionNumber: event.target.value });
     },
 
+    handleGridDimensionsChanged: function (event) {
+      APP.simulation.setGridDimension(event.target.value);
+      this.forceUpdate();
+    },
+
+    handleOpinionDimensionsChanged: function (event) {
+      APP.simulation.setNumberOfOpinionDimensions(event.target.value);
+      this.forceUpdate();
+    },
+
+    handleTraitsChanged: function (event) {
+      APP.simulation.setNumberOfTraits(event.target.value);
+      this.forceUpdate();
+    },
+
+    handleTimestepChanged: function (event) {
+      APP.simulation.setTimestep(event.target.value);
+    },
+
     shouldComponentUpdate: function (nextProps, nextState) {
       return nextState.showTrait !== this.state.showTrait ||
         nextState.showOpinionDimensionNumber !== this.state.showOpinionDimensionNumber;
@@ -148,10 +170,30 @@ APP.UI = (function () {
         "called trait, about a limited amount of opinion dimensions, called features. If you press 'start simulation', " +
         "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
         description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
-        featureSelectOptions = [];
+        featureSelectOptions = [],
+        gridDimensionOptions = [],
+        opinionDimensionOptions = [],
+        numberOfTraitsOptions = [],
+        timestepOptions = [];
 
-      for ( var i = 1; i <= APP.simulation.numberOfOpinionDimensions; i ++ ) {
+      for ( var i = 1; i <= APP.simulation.getNumberOfOpinionDimensions(); i ++ ) {
         featureSelectOptions.push(React.DOM.option({ key: 'feature_' + i, value: i }, "show feature #" + i));
+      }
+
+      for ( var i = 1; i <= 10; i ++ ) {
+        gridDimensionOptions.push(React.DOM.option({ key: 'dimension_opt_' + i, value: i * 10 }, i * 10 + "x" + i * 10 + " grid"));
+      }
+
+      for ( var i = 1; i <= 10; i ++ ) {
+        opinionDimensionOptions.push(React.DOM.option({ key: 'opinion_dimension_opt_' + i, value: i }, i + " opinion dimensions"));
+      }
+
+      for ( var i = 2; i <= 10; i ++ ) {
+        numberOfTraitsOptions.push(React.DOM.option({ key: 'number_of_traits_opt_' + i, value: i }, i + " traits"));
+      }
+
+      for ( var i = 50; i >= 10; i -= 10 ) {
+        timestepOptions.push(React.DOM.option({ key: 'timestep_opt_' + i, value: i }, "timestep " + i + "ms"));
       }
 
       return (
@@ -169,7 +211,7 @@ APP.UI = (function () {
             description_pt1, React.DOM.br(), React.DOM.br(),
             description_pt2, React.DOM.br(), React.DOM.br(),
             description_pt3)),
-          React.DOM.div({ id: 'button-container', className: 'button-container' },
+          React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
             React.createElement(StartStopToggle),
             " | ",
             React.DOM.select({
@@ -182,7 +224,30 @@ APP.UI = (function () {
             React.DOM.a({
               className: classNames('text-button', 'clickable', { 'button-active': ! this.state.showTrait }),
               onClick: this.handleShowSimilarityClick
-            }, "show similarity")))
+            }, "show similarity")),
+          React.DOM.div({ id: 'simulation-property-controls', className: 'simulation-property-controls' },
+            React.DOM.select({
+              id: 'grid-dimension-select',
+              className: 'text-button clickable',
+              onChange: this.handleGridDimensionsChanged
+            }, gridDimensionOptions),
+            React.DOM.select({
+              id: 'opinion-dimension-select',
+              className: 'text-button clickable',
+              value: APP.simulation.getNumberOfOpinionDimensions(),
+              onChange: this.handleOpinionDimensionsChanged
+            }, opinionDimensionOptions),
+            React.DOM.select({
+              id: 'number-of-traits-select',
+              className: 'text-button clickable',
+              value: APP.simulation.getNumberOfTraits(),
+              onChange: this.handleTraitsChanged
+            }, numberOfTraitsOptions),
+            React.DOM.select({
+              id: 'timestep-select',
+              className: 'text-button clickable',
+              onChange: this.handleTimestepChanged
+            }, timestepOptions)))
       );
     }
   });
@@ -213,6 +278,42 @@ APP.simulation = (function () {
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
+  };
+
+  var getHorizontalGridDimension = function () {
+    return horizontalGridDimension;
+  };
+
+  var getVerticalGridDimension = function () {
+    return verticalGridDimension;
+  };
+
+  var getNumberOfOpinionDimensions = function () {
+    return numberOfOpinionDimensions;
+  };
+
+  var getNumberOfTraits = function () {
+    return numberOfTraits;
+  };
+
+  /*
+   * Sets horizontal and vertical grid dimension to the passed value.
+   */
+  var setGridDimension = function (dimension) {
+    horizontalGridDimension = dimension;
+    verticalGridDimension = dimension;
+  };
+
+  var setTimestep = function (timestepInMilliseconds) {
+    simulationTimeStep = timestepInMilliseconds;
+  };
+
+  var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
+    numberOfOpinionDimensions = newNumberOfOpinionDimensions;
+  };
+
+  var setNumberOfTraits = function (newNumberOfTraits) {
+    numberOfTraits = newNumberOfTraits;
   };
 
   /* 
@@ -293,11 +394,15 @@ APP.simulation = (function () {
     toggleIsSimulationRunning: toggleIsSimulationRunning,
     isSimulationRunning: isSimulationRunning,
     getNeighborPositions: getNeighborPositions,
-    numberOfOpinionDimensions: numberOfOpinionDimensions,
-    numberOfTraits: numberOfTraits,
-    horizontalGridDimension: horizontalGridDimension,
-    verticalGridDimension: verticalGridDimension,
-    getNumberOfGridCells: getNumberOfGridCells
+    getHorizontalGridDimension: getHorizontalGridDimension,
+    getVerticalGridDimension: getVerticalGridDimension,
+    setGridDimension: setGridDimension,
+    getNumberOfGridCells: getNumberOfGridCells,
+    setTimestep: setTimestep,
+    getNumberOfOpinionDimensions: getNumberOfOpinionDimensions,
+    setNumberOfOpinionDimensions: setNumberOfOpinionDimensions,
+    getNumberOfTraits: getNumberOfTraits,
+    setNumberOfTraits: setNumberOfTraits
   };
 })();
 ;
