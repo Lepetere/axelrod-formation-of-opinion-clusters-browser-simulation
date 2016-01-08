@@ -66,13 +66,23 @@ select:focus {
   text-align: center;
 }
 
+.tooltip {
+  color: #777;
+}
+
 .about-tooltip {
   display: inline;
   position: absolute;
   top: 20px;
   left: 20px;
-  color: #777;
   padding-bottom: 30px;
+}
+
+.simulation-properties-tooltip {
+  display: inline-block;
+  position: relative;
+  width: 12px;
+  padding-bottom: 12px;
 }
 
 .simulation-property-controls {
@@ -82,12 +92,18 @@ select:focus {
   color: #777;
 }
 
+@media screen and (max-width: 900px) {
+  .simulation-property-controls {
+    display: none;
+  }
+}
+
 .simulation-property-controls > select {
   display: block;
   margin: 10px 0px;
 }
 
-.about-tooltip .tooltip-content {
+.tooltip .tooltip-content {
   position: absolute;
   width: 390px;
   color: #FFFFFF;
@@ -95,28 +111,41 @@ select:focus {
   text-align: left;
   font-weight: normal;
   line-height: 1.3em;
-  visibility: hidden;
+  display: none;
   border-radius: 6px;
   padding: 20px;
+  z-index: 999;
 }
-.about-tooltip span.tooltip-content:after {
+.tooltip span.tooltip-content:after {
   content: '';
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  margin-left: -178px;
   width: 0; height: 0;
   border-bottom: 8px solid #000000;
   border-right: 8px solid transparent;
   border-left: 8px solid transparent;
 }
-a:hover.about-tooltip .tooltip-content, span.tooltip-content:hover {
-  visibility: visible;
+.about-tooltip span.tooltip-content:after {
+  bottom: 100%;
+  left: 50%;
+  margin-left: -178px;
+}
+.simulation-properties-tooltip span.tooltip-content:after {
+  bottom: 100%;
+  left: 50%;
+  margin-left: 54px;
+}
+a:hover.about-tooltip .tooltip-content, .about-tooltip .tooltip-content:hover {
+  display: block;
   top: 0px;
   margin-top: 30px;
   left: 75px;
   margin-left: -76px;
-  z-index: 999;
+}
+a:hover.simulation-properties-tooltip .tooltip-content, .simulation-properties-tooltip .tooltip-content:hover {
+  display: block;
+  top: 0px;
+  margin-top: 30px;
+  right: -144px;
 }
 
 /* ---- state rules ---- */

@@ -113,6 +113,53 @@ APP.UI = (function () {
     }
   });
 
+  /* displays a short general description about the simulation on hover */
+  var DescriptionTooltip = React.createClass({
+    displayName: "DescriptionTooltip",
+
+    render: function render () {
+      var description_pt1 = "This is an implementation of a model simulating opinion diversity and clustering in a society " + 
+        "as proposed by the american political scientist Robert Axelrod. The model simulates social self-organization " +
+        "through the interplay of the two phenomena social influence and homophily.",
+        description_pt2 = "Every square that you see in the middle of the window represents a cell which has an opinion, " +
+        "called trait, about a limited amount of opinion dimensions, called features. If you press 'start simulation', " +
+        "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
+        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd";
+
+      return (
+        React.DOM.a({
+            id: 'about-tooltip',
+            className: 'about-tooltip tooltip text-button'
+          }, "What is this?",
+          React.DOM.span({ className: 'tooltip-content' },
+            description_pt1, React.DOM.br(), React.DOM.br(),
+            description_pt2, React.DOM.br(), React.DOM.br(),
+            description_pt3))
+      );
+    }
+  });
+
+  /* displays a helper tooltip about changing the simulation properties on hover */
+  var SimulationPropertyControlsTooltip = React.createClass({
+    displayName: "SimulationPropertyControlsTooltip",
+
+    render: function render () {
+      var description_pt1 = "Use the above toggles to change the simulation's properties and see how they influence the " +
+        "outcome. Note that changing the number of opinion dimensions and traits as well as the grid size will " +
+        "restart the simulation.",
+        description_pt2 = "Changing the timestep will increase or descrease the speed of the simulation and is also " +
+        "possible while the simulation is running.";
+
+      return (
+        React.DOM.a({
+            id: 'simulation-properties-tooltip',
+            className: 'simulation-properties-tooltip tooltip text-button'
+          }, "?",
+          React.DOM.span({ className: 'tooltip-content' }, description_pt1, React.DOM.br(), React.DOM.br(), description_pt2))
+      );
+    }
+  });
+
   var MainInterface = React.createClass({
     displayName: "MainInterface",
 
@@ -203,14 +250,7 @@ APP.UI = (function () {
             showTrait: this.state.showTrait,
             showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
           }),
-          React.DOM.a({
-            id: 'about-tooltip',
-            className: 'about-tooltip text-button'
-          }, "What is this?",
-          React.DOM.span({ className: 'tooltip-content' },
-            description_pt1, React.DOM.br(), React.DOM.br(),
-            description_pt2, React.DOM.br(), React.DOM.br(),
-            description_pt3)),
+          React.createElement(DescriptionTooltip),
           React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
             React.createElement(StartStopToggle),
             " | ",
@@ -247,7 +287,8 @@ APP.UI = (function () {
               id: 'timestep-select',
               className: 'text-button clickable',
               onChange: this.handleTimestepChanged
-            }, timestepOptions)))
+            }, timestepOptions),
+            React.createElement(SimulationPropertyControlsTooltip)))
       );
     }
   });
