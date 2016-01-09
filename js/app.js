@@ -6,7 +6,7 @@ APP.UI = (function () {
   var SVG_WIDTH = 500,
     SVG_HEIGHT = 500;
 
-  var ui, cells;
+  var cells;
 
   var GridCell = React.createClass({
     displayName: "GridCell",
@@ -294,7 +294,7 @@ APP.UI = (function () {
   });
 
   var init = function () {
-    ui = ReactDOM.render(
+    ReactDOM.render(
       React.createElement(MainInterface),
       document.getElementById('main-container')
     );
@@ -341,20 +341,20 @@ APP.simulation = (function () {
    * Sets horizontal and vertical grid dimension to the passed value.
    */
   var setGridDimension = function (dimension) {
-    horizontalGridDimension = dimension;
-    verticalGridDimension = dimension;
+    horizontalGridDimension = parseInt(dimension);
+    verticalGridDimension = parseInt(dimension);
   };
 
   var setTimestep = function (timestepInMilliseconds) {
-    simulationTimeStep = timestepInMilliseconds;
+    simulationTimeStep = parseInt(timestepInMilliseconds);
   };
 
   var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
-    numberOfOpinionDimensions = newNumberOfOpinionDimensions;
+    numberOfOpinionDimensions = parseInt(newNumberOfOpinionDimensions);
   };
 
   var setNumberOfTraits = function (newNumberOfTraits) {
-    numberOfTraits = newNumberOfTraits;
+    numberOfTraits = parseInt(newNumberOfTraits);
   };
 
   /* 

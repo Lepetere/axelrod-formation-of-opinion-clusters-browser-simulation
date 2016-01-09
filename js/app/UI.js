@@ -6,7 +6,7 @@ APP.UI = (function () {
   var SVG_WIDTH = 500,
     SVG_HEIGHT = 500;
 
-  var ui, cells;
+  var cells;
 
   var GridCell = React.createClass({
     displayName: "GridCell",
@@ -294,7 +294,7 @@ APP.UI = (function () {
   });
 
   var init = function () {
-    ui = ReactDOM.render(
+    ReactDOM.render(
       React.createElement(MainInterface),
       document.getElementById('main-container')
     );

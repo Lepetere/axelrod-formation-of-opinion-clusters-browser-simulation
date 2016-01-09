@@ -33,20 +33,20 @@ APP.simulation = (function () {
    * Sets horizontal and vertical grid dimension to the passed value.
    */
   var setGridDimension = function (dimension) {
-    horizontalGridDimension = dimension;
-    verticalGridDimension = dimension;
+    horizontalGridDimension = parseInt(dimension);
+    verticalGridDimension = parseInt(dimension);
   };
 
   var setTimestep = function (timestepInMilliseconds) {
-    simulationTimeStep = timestepInMilliseconds;
+    simulationTimeStep = parseInt(timestepInMilliseconds);
   };
 
   var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
-    numberOfOpinionDimensions = newNumberOfOpinionDimensions;
+    numberOfOpinionDimensions = parseInt(newNumberOfOpinionDimensions);
   };
 
   var setNumberOfTraits = function (newNumberOfTraits) {
-    numberOfTraits = newNumberOfTraits;
+    numberOfTraits = parseInt(newNumberOfTraits);
   };
 
   /* 
