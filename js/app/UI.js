@@ -6,42 +6,42 @@ APP.UI = (function () {
   var SVG_WIDTH = 500,
     SVG_HEIGHT = 500;
 
-  var cells;
-
   var GridCell = React.createClass({
     displayName: "GridCell",
 
-    statics: {
-      // generates a color to represent the trait of the currently selected feature
-      generateColor: function (showTrait, traits, showOpinionDimensionNumber, cellPosition) {
-        var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+    // generates a color to represent the trait of the currently selected feature
+    generateColor: function () {
+      var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
+        showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
+        showTrait = this.props.showTrait,
+        ownTraits = this.props.traits,
+        allCellTraits = this.props.allCellTraits,
+        cellPosition = this.props.position;
 
-        if (showTrait) {
-          var traitTone = tones[Math.floor((traits[showOpinionDimensionNumber - 1] / APP.simulation.getNumberOfTraits()) * 16)];
-          return '#F' + traitTone + traitTone;
-        }
-        else {
-          var numberOfTraits = APP.simulation.getNumberOfTraits(),
-            amountOfMatchingTraits = 0,
-            ratioOfMatchingTraits,
-            traitTone;
+      if (showTrait) {
+        var traitTone = tones[Math.floor((ownTraits[showOpinionDimensionNumber - 1] / APP.simulation.getNumberOfTraits()) * 16)];
+        return '#F' + traitTone + traitTone;
+      }
+      else {
+        var numberOfTraits = APP.simulation.getNumberOfTraits(),
+          amountOfMatchingTraits = 0,
+          ratioOfMatchingTraits,
+          traitTone;
 
-          APP.simulation.getNeighborPositions(cellPosition).forEach(function (cellPosition) {
-            cells[cellPosition].props.traits.forEach(function (neighborTrait, index) {
-              if (neighborTrait == traits[index]) amountOfMatchingTraits ++;
-            });
+        APP.simulation.getNeighborPositions(cellPosition).forEach(function (cellPosition) {
+          allCellTraits[cellPosition].forEach(function (neighborTrait, index) {
+            if (neighborTrait == ownTraits[index]) amountOfMatchingTraits ++;
           });
+        });
 
-          ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * numberOfTraits);
-          traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
-          return traitTone + traitTone + traitTone;
-        }
+        ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * numberOfTraits);
+        traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
+        return traitTone + traitTone + traitTone;
       }
     },
 
     render: function render () {
       var position = this.props.position,
-        showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
         verticalGridDimension = APP.simulation.getVerticalGridDimension(),
         horizontalGridDimension = APP.simulation.getHorizontalGridDimension(),
         gridCellHeight = Math.ceil(SVG_HEIGHT / horizontalGridDimension) + 1, // + 1 to make sure there are no gaps ...
@@ -49,46 +49,12 @@ APP.UI = (function () {
 
       return React.DOM.rect({
         className: 'grid-cell',
-        fill: this.constructor.generateColor(this.props.showTrait, this.props.traits, showOpinionDimensionNumber, position),
+        fill: this.generateColor(),
         height: gridCellHeight,
         width: gridCellWidth,
         x: (SVG_WIDTH / horizontalGridDimension) * (position % horizontalGridDimension),
         y: (SVG_HEIGHT / verticalGridDimension) * ((position - (position % verticalGridDimension)) / verticalGridDimension)
       });
-    }
-  });
-
-  var Grid = React.createClass({
-    displayName: "Grid",
-
-    statics: {
-      generateRandomTraits: function (numberOfOpinionDimensions, numberOfTraits) {
-        var traits = [];
-        for ( var i = 0; i < numberOfOpinionDimensions; i ++ ) {
-          traits.push(Math.floor(Math.random() * numberOfTraits));
-        }
-        return traits;
-      }
-    },
-
-    render: function render () {
-      var numberOfOpinionDimensions = APP.simulation.getNumberOfOpinionDimensions(),
-        numberOfTraits = APP.simulation.getNumberOfTraits();
-
-      cells = [];
-      for ( var i = 0; i < this.props.numberOfGridCells; i ++ ) {
-        cells.push(React.createElement(GridCell, {
-          position: i,
-          key: i,
-          traits: this.constructor.generateRandomTraits(numberOfOpinionDimensions, numberOfTraits),
-          showTrait: this.props.showTrait,
-          showOpinionDimensionNumber: this.props.showOpinionDimensionNumber
-        }));
-      }
-
-      return (
-        React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells)
-      );
     }
   });
 
@@ -103,7 +69,9 @@ APP.UI = (function () {
 
     handleStartStopClick: function (event) {
       this.setState({ isSimulationRunning: ! this.state.isSimulationRunning });
-      APP.simulation.toggleIsSimulationRunning(cells);
+      // pass a reference to the top ui element so that the cells which are part of the ui's state can be modified
+      // and the forceUpdate method can be invoked
+      APP.simulation.toggleIsSimulationRunning(this.props.uiReference);
     },
 
     render: function render () {
@@ -167,8 +135,33 @@ APP.UI = (function () {
     }
   });
 
+  /* This is the top level interface component. All other interface parts are children of this component. */
   var MainInterface = React.createClass({
     displayName: "MainInterface",
+
+    /*
+     * Generates an array of random traits for an amount of cells specified by the grid size
+     * and amount of traits and features in the simulation module.
+     *
+     * This method is invoked when the app is initialized (componentWillMount) and every time
+     * the simulation properties are modified by the user.
+     */
+    generateNewCellTraits: function () {
+      var numberOfGridCells = APP.simulation.getNumberOfGridCells(),
+        numberOfOpinionDimensions = APP.simulation.getNumberOfOpinionDimensions(),
+        numberOfTraits = APP.simulation.getNumberOfTraits(),
+        cellTraits = [];
+
+      for ( var i_gc = 0; i_gc < numberOfGridCells; i_gc ++ ) {
+        var traits = [];
+        for ( var i_od = 0; i_od < numberOfOpinionDimensions; i_od ++ ) {
+          traits.push(Math.floor(Math.random() * numberOfTraits));
+        }
+        cellTraits.push(traits);
+      }
+      
+      return cellTraits;
+    },
 
     getInitialState: function () {
       return {
@@ -176,7 +169,8 @@ APP.UI = (function () {
         showOpinionDimensionNumber: 1,
         // indicates if the trait of a particular feature or the similarity between neighbors is displayed
         // set to true for the traits and to false for the similarity
-        showTrait: true
+        showTrait: true,
+        cellTraits: this.generateNewCellTraits()
       };
     },
 
@@ -194,16 +188,19 @@ APP.UI = (function () {
 
     handleGridDimensionsChanged: function (event) {
       APP.simulation.setGridDimension(event.target.value);
+      this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleOpinionDimensionsChanged: function (event) {
       APP.simulation.setNumberOfOpinionDimensions(event.target.value);
+      this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleTraitsChanged: function (event) {
       APP.simulation.setNumberOfTraits(event.target.value);
+      this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
@@ -217,19 +214,17 @@ APP.UI = (function () {
     },
 
     render: function render () {
-      var description_pt1 = "This is an implementation of a model simulating opinion diversity and clustering in a society " + 
-        "as proposed by the american political scientist Robert Axelrod. The model simulates social self-organization " +
-        "through the interplay of the two phenomena social influence and homophily.",
-        description_pt2 = "Every square that you see in the middle of the window represents a cell which has an opinion, " +
-        "called trait, about a limited amount of opinion dimensions, called features. If you press 'start simulation', " +
-        "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
-        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
-        featureSelectOptions = [],
+      var featureSelectOptions = [],
         gridDimensionOptions = [],
         opinionDimensionOptions = [],
         numberOfTraitsOptions = [],
-        timestepOptions = [];
+        timestepOptions = [],
+        numberOfOpinionDimensions = APP.simulation.getNumberOfOpinionDimensions(),
+        numberOfTraits = APP.simulation.getNumberOfTraits(),
+        numberOfGridCells = APP.simulation.getNumberOfGridCells(),
+        cells = [];
 
+      /* generate select options */
       for ( var i = 1; i <= APP.simulation.getNumberOfOpinionDimensions(); i ++ ) {
         featureSelectOptions.push(React.DOM.option({ key: 'feature_' + i, value: i }, "show feature #" + i));
       }
@@ -250,16 +245,25 @@ APP.UI = (function () {
         timestepOptions.push(React.DOM.option({ key: 'timestep_opt_' + i, value: i }, "timestep " + i + "ms"));
       }
 
+      /* generate cells */
+      for ( var i = 0; i < numberOfGridCells; i ++ ) {
+        cells.push(React.createElement(GridCell, {
+          position: i,
+          key: i,
+          traits: this.state.cellTraits[i],
+          // we are passing the whole cellTraits array as well, so that the cell can look up traits of neighbors
+          allCellTraits: this.state.cellTraits,
+          showTrait: this.state.showTrait,
+          showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
+        }));
+      }
+
       return (
-        React.DOM.div({ id: 'main-interface', className: 'main-interface' }, 
-          React.createElement(Grid, { 
-            numberOfGridCells: APP.simulation.getNumberOfGridCells(),
-            showTrait: this.state.showTrait,
-            showOpinionDimensionNumber: this.state.showOpinionDimensionNumber
-          }),
+        React.DOM.div({ id: 'main-interface', className: 'main-interface' },
+          React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells),
           React.createElement(DescriptionTooltip),
           React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
-            React.createElement(StartStopToggle),
+            React.createElement(StartStopToggle, { uiReference: this }),
             " | ",
             React.DOM.select({
               id: 'feature-select',
