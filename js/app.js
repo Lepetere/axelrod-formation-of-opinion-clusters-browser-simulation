@@ -43,11 +43,15 @@ APP.UI = (function () {
       var position = this.props.position,
         showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
         verticalGridDimension = APP.simulation.getVerticalGridDimension(),
-        horizontalGridDimension = APP.simulation.getHorizontalGridDimension();
+        horizontalGridDimension = APP.simulation.getHorizontalGridDimension(),
+        gridCellHeight = Math.ceil(SVG_HEIGHT / horizontalGridDimension) + 1, // + 1 to make sure there are no gaps ...
+        gridCellWidth = Math.ceil(SVG_WIDTH / verticalGridDimension) + 1; // ... whatever the grid dimensions
 
       return React.DOM.rect({
         className: 'grid-cell',
         fill: this.constructor.generateColor(this.props.showTrait, this.props.traits, showOpinionDimensionNumber, position),
+        height: gridCellHeight,
+        width: gridCellWidth,
         x: (SVG_WIDTH / horizontalGridDimension) * (position % horizontalGridDimension),
         y: (SVG_HEIGHT / verticalGridDimension) * ((position - (position % verticalGridDimension)) / verticalGridDimension)
       });
@@ -120,11 +124,13 @@ APP.UI = (function () {
     render: function render () {
       var description_pt1 = "This is an implementation of a model simulating opinion diversity and clustering in a society " + 
         "as proposed by the american political scientist Robert Axelrod. The model simulates social self-organization " +
-        "through the interplay of the two phenomena social influence and homophily.",
+        "through the interplay of two phenomena called social influence and homophily.",
         description_pt2 = "Every square that you see in the middle of the window represents a cell which has an opinion, " +
-        "called trait, about a limited amount of opinion dimensions, called features. If you press 'start simulation', " +
+        "called trait, about a limited amount of opinion dimensions, called features. You can consider those cells " +
+        "being individuals in a society. If you press 'start simulation', " +
         "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
-        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd";
+        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
+        description_pt4 = "This is built for Firefox and Chrome. Use one of those browsers to make sure everything runs smoothly.";
 
       return (
         React.DOM.a({
@@ -134,7 +140,8 @@ APP.UI = (function () {
           React.DOM.span({ className: 'tooltip-content' },
             description_pt1, React.DOM.br(), React.DOM.br(),
             description_pt2, React.DOM.br(), React.DOM.br(),
-            description_pt3))
+            description_pt3, React.DOM.br(), React.DOM.br(),
+            description_pt4))
       );
     }
   });

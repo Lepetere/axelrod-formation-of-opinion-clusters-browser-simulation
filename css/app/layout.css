@@ -8,13 +8,6 @@
   margin-left: -250px;
 }
 
-.grid-cell {
-  height: 50px;
-  width: 50px;
-  position: static;
-  float: left;
-}
-
 .center-button-container {
   position: absolute;
   left: 50%;
@@ -90,7 +83,7 @@
 .simulation-properties-tooltip span.tooltip-content:after {
   bottom: 100%;
   left: 50%;
-  margin-left: 54px;
+  margin-left: 55px;
 }
 a:hover.about-tooltip .tooltip-content, .about-tooltip .tooltip-content:hover {
   display: block;
