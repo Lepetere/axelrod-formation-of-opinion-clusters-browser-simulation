@@ -105,21 +105,45 @@ APP.simulation = (function () {
     }
   };
 
-  var toggleIsSimulationRunning = function (cells) {
+  var toggleIsSimulationRunning = function (uiReference, cellTraits) {
     isSimulationRunning = ! isSimulationRunning;
-    if (isSimulationRunning) runSimulationStep(cells);
+    if (isSimulationRunning) runSimulationStep(uiReference, cellTraits);
   };
 
   /* 
    * Runs a step of the simulation and schedule the next one if the simulation is still running.
    *
-   * This function modifies the passed cells array.
+   * This function modifies the 'cellTraits' state of the uiReference (top level ui component).
    */
-  var runSimulationStep = function (cells) {
-    console.log("test run");
+  var runSimulationStep = function (uiReference, cellTraits) {
+    var randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
+      randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)],
+      amountOfMatchingTraits = 0,
+      unsimilarTraitIndices = [],
+      ratioOfMatchingTraits;
+
+    for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
+      if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
+        amountOfMatchingTraits ++;
+      }
+      else {
+        unsimilarTraitIndices.push(i)
+      }
+    }
+
+    var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
+
+    if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
+      // pick a random one of the traits that the neighbors don't have in common yet
+      // and set it on the neighbor so that it is the same as on the random cell
+      var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
+      cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
+      uiReference.setState({ cellTraits: cellTraits });
+      uiReference.forceUpdate();
+    }
 
     if (isSimulationRunning) {
-      setTimeout(runSimulationStep, simulationTimeStep, cells);
+      setTimeout(runSimulationStep, simulationTimeStep, uiReference, cellTraits);
     }
   };
 

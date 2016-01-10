@@ -34,7 +34,7 @@ APP.UI = (function () {
           });
         });
 
-        ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * numberOfTraits);
+        ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * 4);
         traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
         return traitTone + traitTone + traitTone;
       }
@@ -71,7 +71,7 @@ APP.UI = (function () {
       this.setState({ isSimulationRunning: ! this.state.isSimulationRunning });
       // pass a reference to the top ui element so that the cells which are part of the ui's state can be modified
       // and the forceUpdate method can be invoked
-      APP.simulation.toggleIsSimulationRunning(this.props.uiReference);
+      APP.simulation.toggleIsSimulationRunning(this.props.uiReference, this.props.cellTraits);
     },
 
     render: function render () {
@@ -263,7 +263,7 @@ APP.UI = (function () {
           React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells),
           React.createElement(DescriptionTooltip),
           React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
-            React.createElement(StartStopToggle, { uiReference: this }),
+            React.createElement(StartStopToggle, { uiReference: this, cellTraits: this.state.cellTraits }),
             " | ",
             React.DOM.select({
               id: 'feature-select',
