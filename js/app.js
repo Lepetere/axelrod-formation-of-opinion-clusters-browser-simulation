@@ -204,8 +204,8 @@ APP.UI = (function () {
       this.forceUpdate();
     },
 
-    handleTimestepChanged: function (event) {
-      APP.simulation.setTimestep(event.target.value);
+    handleSpeedChanged: function (event) {
+      APP.simulation.setSpeed(event.target.value);
     },
 
     shouldComponentUpdate: function (nextProps, nextState) {
@@ -241,9 +241,9 @@ APP.UI = (function () {
         numberOfTraitsOptions.push(React.DOM.option({ key: 'number_of_traits_opt_' + i, value: i }, i + " traits"));
       }
 
-      for ( var i = 50; i >= 10; i -= 10 ) {
-        timestepOptions.push(React.DOM.option({ key: 'timestep_opt_' + i, value: i }, "timestep " + i + "ms"));
-      }
+      ["speed: 1 (slow)", "speed: 2", "speed: 3 (medium)", "speed: 4", "speed: 5 (fast)"].forEach(function (speedString, index) {
+        timestepOptions.push(React.DOM.option({ key: 'speed_opt_' + index, value: index + 1 }, speedString));
+      });
 
       /* generate cells */
       for ( var i = 0; i < numberOfGridCells; i ++ ) {
@@ -297,7 +297,7 @@ APP.UI = (function () {
             React.DOM.select({
               id: 'timestep-select',
               className: 'text-button clickable',
-              onChange: this.handleTimestepChanged
+              onChange: this.handleSpeedChanged
             }, timestepOptions),
             React.createElement(SimulationPropertyControlsTooltip)))
       );
@@ -325,8 +325,8 @@ APP.simulation = (function () {
     numberOfTraits = 5, // the number of traits that each cell can take for each feature
     horizontalGridDimension = 10,
     verticalGridDimension = 10,
-    simulationTimeStep = 50,
-    isSimulationRunning = false;
+    isSimulationRunning = false,
+    simulationSpeed = 1;
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
@@ -356,8 +356,15 @@ APP.simulation = (function () {
     verticalGridDimension = parseInt(dimension);
   };
 
-  var setTimestep = function (timestepInMilliseconds) {
-    simulationTimeStep = parseInt(timestepInMilliseconds);
+  var setSpeed = function (speed) {
+    simulationSpeed = parseInt(speed);
+  };
+
+  /*
+   * Returns the interval length for the simulation in milliseconds.
+   */
+  var getTimestep = function () {
+    return (1 / simulationSpeed) * 5000 / getNumberOfGridCells();
   };
 
   var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
@@ -462,7 +469,7 @@ APP.simulation = (function () {
     }
 
     if (isSimulationRunning) {
-      setTimeout(runSimulationStep, simulationTimeStep, uiReference, cellTraits);
+      setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
     }
   };
 
@@ -474,7 +481,7 @@ APP.simulation = (function () {
     getVerticalGridDimension: getVerticalGridDimension,
     setGridDimension: setGridDimension,
     getNumberOfGridCells: getNumberOfGridCells,
-    setTimestep: setTimestep,
+    setSpeed: setSpeed,
     getNumberOfOpinionDimensions: getNumberOfOpinionDimensions,
     setNumberOfOpinionDimensions: setNumberOfOpinionDimensions,
     getNumberOfTraits: getNumberOfTraits,

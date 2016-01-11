@@ -6,8 +6,8 @@ APP.simulation = (function () {
     numberOfTraits = 5, // the number of traits that each cell can take for each feature
     horizontalGridDimension = 10,
     verticalGridDimension = 10,
-    simulationTimeStep = 50,
-    isSimulationRunning = false;
+    isSimulationRunning = false,
+    simulationSpeed = 1;
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
@@ -37,8 +37,15 @@ APP.simulation = (function () {
     verticalGridDimension = parseInt(dimension);
   };
 
-  var setTimestep = function (timestepInMilliseconds) {
-    simulationTimeStep = parseInt(timestepInMilliseconds);
+  var setSpeed = function (speed) {
+    simulationSpeed = parseInt(speed);
+  };
+
+  /*
+   * Returns the interval length for the simulation in milliseconds.
+   */
+  var getTimestep = function () {
+    return (1 / simulationSpeed) * 5000 / getNumberOfGridCells();
   };
 
   var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
@@ -143,7 +150,7 @@ APP.simulation = (function () {
     }
 
     if (isSimulationRunning) {
-      setTimeout(runSimulationStep, simulationTimeStep, uiReference, cellTraits);
+      setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
     }
   };
 
@@ -155,7 +162,7 @@ APP.simulation = (function () {
     getVerticalGridDimension: getVerticalGridDimension,
     setGridDimension: setGridDimension,
     getNumberOfGridCells: getNumberOfGridCells,
-    setTimestep: setTimestep,
+    setSpeed: setSpeed,
     getNumberOfOpinionDimensions: getNumberOfOpinionDimensions,
     setNumberOfOpinionDimensions: setNumberOfOpinionDimensions,
     getNumberOfTraits: getNumberOfTraits,
