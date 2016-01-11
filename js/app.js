@@ -11,7 +11,8 @@ APP.UI = (function () {
 
     // generates a color to represent the trait of the currently selected feature
     generateColor: function () {
-      var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
+      var colors = ['#e60000', '#ffa31a', '#ffff4d', '#009900', '#8cff66', '#1affff', '#3838ad',
+                    '#1a75ff', '#ff00be', '#000066', '#994b00'],
         showOpinionDimensionNumber = this.props.showOpinionDimensionNumber,
         showTrait = this.props.showTrait,
         ownTraits = this.props.traits,
@@ -19,12 +20,12 @@ APP.UI = (function () {
         cellPosition = this.props.position;
 
       if (showTrait) {
-        var traitTone = tones[Math.floor((ownTraits[showOpinionDimensionNumber - 1] / APP.simulation.getNumberOfTraits()) * 16)];
-        return '#F' + traitTone + traitTone;
+        return colors[ownTraits[showOpinionDimensionNumber - 1]];
       }
       else {
         // compute a color to represent the similarity of neighbors
-        var numberOfTraits = APP.simulation.getNumberOfTraits(),
+        var tones = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
+          numberOfTraits = APP.simulation.getNumberOfTraits(),
           amountOfMatchingTraits = 0,
           ratioOfMatchingTraits,
           traitTone;
