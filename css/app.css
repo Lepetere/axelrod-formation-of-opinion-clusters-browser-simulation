@@ -85,6 +85,12 @@ select:focus {
   color: #777;
 }
 
+.simulation-controls-tooltip {
+  display: inline-block;
+  position: relative;
+  padding-top: 6px;
+}
+
 @media screen and (max-width: 900px) {
   .simulation-property-controls {
     display: none;
@@ -127,6 +133,15 @@ select:focus {
   left: 50%;
   margin-left: 55px;
 }
+.simulation-controls-tooltip span.tooltip-content:after {
+  top: 100%;
+  left: 50%;
+  margin-left: 60px;
+  border-top: 8px solid #000000;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
 a:hover.about-tooltip .tooltip-content, .about-tooltip .tooltip-content:hover {
   display: block;
   top: 0px;
@@ -138,6 +153,12 @@ a:hover.simulation-properties-tooltip .tooltip-content, .simulation-properties-t
   display: block;
   top: 0px;
   margin-top: 30px;
+  right: -144px;
+}
+a:hover.simulation-controls-tooltip .tooltip-content, .simulation-controls-tooltip .tooltip-content:hover {
+  display: block;
+  bottom: 0px;
+  margin-bottom: 30px;
   right: -144px;
 }
 

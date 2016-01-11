@@ -136,6 +136,29 @@ APP.UI = (function () {
     }
   });
 
+  /* displays a helper tooltip next to the simulation control buttons in the center of the window */
+  var SimulationControlsTooltip = React.createClass({
+    displayName: "SimulationControlsTooltip",
+
+    render: function render () {
+      var description_pt1 = "Press 'start simulation' to run the simulation.",
+        description_pt2 = "With the middle button you can switch the view between the different features (opinion dimensions).",
+        description_pt3 = "The button on the right, 'show similarity' activates a view that takes all features into account and " +
+          "displays how many traits a cell has in common with its neighbors. The more white the cell is displayed, the more " +
+          "traits it has in common with its neighbors.";
+
+      return (
+        React.DOM.a({
+            id: 'simulation-controls-tooltip',
+            className: 'simulation-controls-tooltip tooltip text-button'
+          }, "?",
+          React.DOM.span({ className: 'tooltip-content' },
+            description_pt1, React.DOM.br(), React.DOM.br(),
+            description_pt2, React.DOM.br(), React.DOM.br(), description_pt3))
+      );
+    }
+  });
+
   /* This is the top level interface component. All other interface parts are children of this component. */
   var MainInterface = React.createClass({
     displayName: "MainInterface",
@@ -276,7 +299,9 @@ APP.UI = (function () {
             React.DOM.a({
               className: classNames('text-button', 'clickable', { 'button-active': ! this.state.showTrait }),
               onClick: this.handleShowSimilarityClick
-            }, "show similarity")),
+            }, "show similarity"),
+            " | ",
+            React.createElement(SimulationControlsTooltip)),
           React.DOM.div({ id: 'simulation-property-controls', className: 'simulation-property-controls' },
             React.DOM.select({
               id: 'grid-dimension-select',
