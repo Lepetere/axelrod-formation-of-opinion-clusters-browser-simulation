@@ -23,6 +23,7 @@ APP.UI = (function () {
         return '#F' + traitTone + traitTone;
       }
       else {
+        // compute a color to represent the similarity of neighbors
         var numberOfTraits = APP.simulation.getNumberOfTraits(),
           amountOfMatchingTraits = 0,
           ratioOfMatchingTraits,
@@ -34,9 +35,9 @@ APP.UI = (function () {
           });
         });
 
-        ratioOfMatchingTraits = amountOfMatchingTraits / (numberOfTraits * 4);
+        ratioOfMatchingTraits = amountOfMatchingTraits / (APP.simulation.getNumberOfOpinionDimensions() * 4); // 4 neighbors
         traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
-        return traitTone + traitTone + traitTone;
+        return '#' + traitTone + traitTone + traitTone;
       }
     },
 

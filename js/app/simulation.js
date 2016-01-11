@@ -124,7 +124,7 @@ APP.simulation = (function () {
    */
   var runSimulationStep = function (uiReference, cellTraits) {
     var randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
-      randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)],
+      randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)], // 4 neighbors
       amountOfMatchingTraits = 0,
       unsimilarTraitIndices = [],
       ratioOfMatchingTraits;
