@@ -69,6 +69,11 @@ APP.UI = (function () {
       };
     },
 
+    stopSimulation: function () {
+      this.setState({ isSimulationRunning: false });
+      APP.simulation.stopSimulation();
+    },
+
     handleStartStopClick: function (event) {
       this.setState({ isSimulationRunning: ! this.state.isSimulationRunning });
       // pass a reference to the top ui element so that the cells which are part of the ui's state can be modified
@@ -199,6 +204,11 @@ APP.UI = (function () {
       };
     },
 
+    forceStopOfSimulation: function () {
+      this.setState({ cellTraits: null });
+      this.refs.startStopToggle.stopSimulation();
+    },
+
     handleShowSimilarityClick: function (event) {
       this.setState({ showTrait: ! this.state.showTrait });
     },
@@ -212,18 +222,21 @@ APP.UI = (function () {
     },
 
     handleGridDimensionsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setGridDimension(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleOpinionDimensionsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setNumberOfOpinionDimensions(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleTraitsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setNumberOfTraits(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
@@ -288,7 +301,11 @@ APP.UI = (function () {
           React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells),
           React.createElement(DescriptionTooltip),
           React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
-            React.createElement(StartStopToggle, { uiReference: this, cellTraits: this.state.cellTraits }),
+            React.createElement(StartStopToggle, {
+              uiReference: this,
+              cellTraits: this.state.cellTraits,
+              ref: 'startStopToggle'
+            }),
             " | ",
             React.DOM.select({
               id: 'feature-select',
@@ -355,7 +372,8 @@ APP.simulation = (function () {
     isSimulationRunning = false,
     simulationSpeed = 1,
     timestepNeedsToBeRecomputed = true,
-    timestep;
+    timestep,
+    timeout;
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
@@ -396,7 +414,7 @@ APP.simulation = (function () {
    */
   var getTimestep = function () {
     if (timestepNeedsToBeRecomputed) {
-      timestep = (1 / simulationSpeed) * 5000 / getNumberOfGridCells();console.log(timestep);
+      timestep = (1 / simulationSpeed) * 5000 / getNumberOfGridCells();
       timestepNeedsToBeRecomputed = false;
     }
     return timestep;
@@ -468,7 +486,17 @@ APP.simulation = (function () {
 
   var toggleIsSimulationRunning = function (uiReference, cellTraits) {
     isSimulationRunning = ! isSimulationRunning;
-    if (isSimulationRunning) runSimulationStep(uiReference, cellTraits);
+    if (isSimulationRunning) {
+      runSimulationStep(uiReference, cellTraits);
+    }
+    else {
+      timeout = null;
+    }
+  };
+
+  var stopSimulation = function () {
+    isSimulationRunning = false;
+    timeout = null;
   };
 
   /* 
@@ -483,33 +511,43 @@ APP.simulation = (function () {
       unsimilarTraitIndices = [],
       ratioOfMatchingTraits;
 
-    for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
-      if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
-        amountOfMatchingTraits ++;
+    try {
+      for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
+        if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
+          amountOfMatchingTraits ++;
+        }
+        else {
+          unsimilarTraitIndices.push(i)
+        }
       }
-      else {
-        unsimilarTraitIndices.push(i)
+
+      var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
+
+      if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
+        // pick a random one of the traits that the neighbors don't have in common yet
+        // and set it on the neighbor so that it is the same as on the random cell
+        var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
+        cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
+        uiReference.setState({ cellTraits: cellTraits });
+        uiReference.forceUpdate();
+      }
+
+      if (isSimulationRunning) {
+        timeout = setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
       }
     }
-
-    var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
-
-    if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
-      // pick a random one of the traits that the neighbors don't have in common yet
-      // and set it on the neighbor so that it is the same as on the random cell
-      var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
-      cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
-      uiReference.setState({ cellTraits: cellTraits });
-      uiReference.forceUpdate();
-    }
-
-    if (isSimulationRunning) {
-      setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
+    catch (error) {
+      console.warn("Error occurred while running simulation:");
+      console.warn(error);
+      console.warn("This probably happened because the simulation properties were changed. Stopping simulation.");
+      timeout = null;
+      isSimulationRunning = false;
     }
   };
 
   return {
     toggleIsSimulationRunning: toggleIsSimulationRunning,
+    stopSimulation: stopSimulation,
     isSimulationRunning: isSimulationRunning,
     getNeighborPositions: getNeighborPositions,
     getHorizontalGridDimension: getHorizontalGridDimension,

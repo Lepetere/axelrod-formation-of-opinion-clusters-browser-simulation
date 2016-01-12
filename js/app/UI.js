@@ -69,6 +69,11 @@ APP.UI = (function () {
       };
     },
 
+    stopSimulation: function () {
+      this.setState({ isSimulationRunning: false });
+      APP.simulation.stopSimulation();
+    },
+
     handleStartStopClick: function (event) {
       this.setState({ isSimulationRunning: ! this.state.isSimulationRunning });
       // pass a reference to the top ui element so that the cells which are part of the ui's state can be modified
@@ -199,6 +204,11 @@ APP.UI = (function () {
       };
     },
 
+    forceStopOfSimulation: function () {
+      this.setState({ cellTraits: null });
+      this.refs.startStopToggle.stopSimulation();
+    },
+
     handleShowSimilarityClick: function (event) {
       this.setState({ showTrait: ! this.state.showTrait });
     },
@@ -212,18 +222,21 @@ APP.UI = (function () {
     },
 
     handleGridDimensionsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setGridDimension(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleOpinionDimensionsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setNumberOfOpinionDimensions(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
     },
 
     handleTraitsChanged: function (event) {
+      this.forceStopOfSimulation();
       APP.simulation.setNumberOfTraits(event.target.value);
       this.setState({ cellTraits: this.generateNewCellTraits() });
       this.forceUpdate();
@@ -288,7 +301,11 @@ APP.UI = (function () {
           React.createElement('svg', { className: 'grid', height: SVG_HEIGHT, width: SVG_WIDTH }, cells),
           React.createElement(DescriptionTooltip),
           React.DOM.div({ id: 'center-button-container', className: 'center-button-container' },
-            React.createElement(StartStopToggle, { uiReference: this, cellTraits: this.state.cellTraits }),
+            React.createElement(StartStopToggle, {
+              uiReference: this,
+              cellTraits: this.state.cellTraits,
+              ref: 'startStopToggle'
+            }),
             " | ",
             React.DOM.select({
               id: 'feature-select',

@@ -9,7 +9,8 @@ APP.simulation = (function () {
     isSimulationRunning = false,
     simulationSpeed = 1,
     timestepNeedsToBeRecomputed = true,
-    timestep;
+    timestep,
+    timeout;
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
@@ -50,7 +51,7 @@ APP.simulation = (function () {
    */
   var getTimestep = function () {
     if (timestepNeedsToBeRecomputed) {
-      timestep = (1 / simulationSpeed) * 5000 / getNumberOfGridCells();console.log(timestep);
+      timestep = (1 / simulationSpeed) * 5000 / getNumberOfGridCells();
       timestepNeedsToBeRecomputed = false;
     }
     return timestep;
@@ -122,7 +123,17 @@ APP.simulation = (function () {
 
   var toggleIsSimulationRunning = function (uiReference, cellTraits) {
     isSimulationRunning = ! isSimulationRunning;
-    if (isSimulationRunning) runSimulationStep(uiReference, cellTraits);
+    if (isSimulationRunning) {
+      runSimulationStep(uiReference, cellTraits);
+    }
+    else {
+      timeout = null;
+    }
+  };
+
+  var stopSimulation = function () {
+    isSimulationRunning = false;
+    timeout = null;
   };
 
   /* 
@@ -137,33 +148,43 @@ APP.simulation = (function () {
       unsimilarTraitIndices = [],
       ratioOfMatchingTraits;
 
-    for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
-      if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
-        amountOfMatchingTraits ++;
+    try {
+      for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
+        if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
+          amountOfMatchingTraits ++;
+        }
+        else {
+          unsimilarTraitIndices.push(i)
+        }
       }
-      else {
-        unsimilarTraitIndices.push(i)
+
+      var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
+
+      if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
+        // pick a random one of the traits that the neighbors don't have in common yet
+        // and set it on the neighbor so that it is the same as on the random cell
+        var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
+        cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
+        uiReference.setState({ cellTraits: cellTraits });
+        uiReference.forceUpdate();
+      }
+
+      if (isSimulationRunning) {
+        timeout = setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
       }
     }
-
-    var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
-
-    if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
-      // pick a random one of the traits that the neighbors don't have in common yet
-      // and set it on the neighbor so that it is the same as on the random cell
-      var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
-      cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
-      uiReference.setState({ cellTraits: cellTraits });
-      uiReference.forceUpdate();
-    }
-
-    if (isSimulationRunning) {
-      setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
+    catch (error) {
+      console.warn("Error occurred while running simulation:");
+      console.warn(error);
+      console.warn("This probably happened because the simulation properties were changed. Stopping simulation.");
+      timeout = null;
+      isSimulationRunning = false;
     }
   };
 
   return {
     toggleIsSimulationRunning: toggleIsSimulationRunning,
+    stopSimulation: stopSimulation,
     isSimulationRunning: isSimulationRunning,
     getNeighborPositions: getNeighborPositions,
     getHorizontalGridDimension: getHorizontalGridDimension,
