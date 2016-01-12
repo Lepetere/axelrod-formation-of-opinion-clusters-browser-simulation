@@ -7,7 +7,9 @@ APP.simulation = (function () {
     horizontalGridDimension = 10,
     verticalGridDimension = 10,
     isSimulationRunning = false,
-    simulationSpeed = 1;
+    simulationSpeed = 1,
+    timestepNeedsToBeRecomputed = true,
+    timestep;
 
   var getNumberOfGridCells = function () {
     return horizontalGridDimension * verticalGridDimension;
@@ -35,17 +37,23 @@ APP.simulation = (function () {
   var setGridDimension = function (dimension) {
     horizontalGridDimension = parseInt(dimension);
     verticalGridDimension = parseInt(dimension);
+    timestepNeedsToBeRecomputed = true;
   };
 
   var setSpeed = function (speed) {
     simulationSpeed = parseInt(speed);
+    timestepNeedsToBeRecomputed = true;
   };
 
   /*
    * Returns the interval length for the simulation in milliseconds.
    */
   var getTimestep = function () {
-    return (1 / simulationSpeed) * 5000 / getNumberOfGridCells();
+    if (timestepNeedsToBeRecomputed) {
+      timestep = (1 / simulationSpeed) * 5000 / getNumberOfGridCells();console.log(timestep);
+      timestepNeedsToBeRecomputed = false;
+    }
+    return timestep;
   };
 
   var setNumberOfOpinionDimensions = function (newNumberOfOpinionDimensions) {
