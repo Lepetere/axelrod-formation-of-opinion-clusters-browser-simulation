@@ -149,7 +149,7 @@ APP.simulation = (function () {
       ratioOfMatchingTraits;
 
     try {
-      for ( var i = 0; i < getNumberOfTraits(); i ++ ) {
+      for ( var i = 0; i < getNumberOfOpinionDimensions(); i ++ ) {
         if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
           amountOfMatchingTraits ++;
         }
@@ -158,7 +158,7 @@ APP.simulation = (function () {
         }
       }
 
-      var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfTraits();
+      var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfOpinionDimensions();
 
       if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
         // pick a random one of the traits that the neighbors don't have in common yet
