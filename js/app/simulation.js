@@ -142,38 +142,42 @@ APP.simulation = (function () {
    * This function modifies the 'cellTraits' state of the uiReference (top level ui component).
    */
   var runSimulationStep = function (uiReference, cellTraits) {
-    var numberOfOpinionDimensions = getNumberOfOpinionDimensions(),
-      randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
-      randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)], // 4 neighbors
-      amountOfMatchingTraits = 0,
-      unsimilarTraitIndices = [],
-      ratioOfMatchingTraits;
+    var numberOfOpinionDimensions = getNumberOfOpinionDimensions();
 
     try {
-      for ( var i = 0; i < numberOfOpinionDimensions; i ++ ) {
-        if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
-          amountOfMatchingTraits ++;
-        }
-        else {
-          unsimilarTraitIndices.push(i)
-        }
-      }
+      // by looping over the amount of features we batch the ui updates for more complex opinion spaces which speeds up the simulation
+      for ( var simulationCycle = 0; simulationCycle < numberOfOpinionDimensions; simulationCycle ++ ) {
+        var randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
+          randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)], // 4 neighbors
+          amountOfMatchingTraits = 0,
+          unsimilarTraitIndices = [],
+          ratioOfMatchingTraits;
 
-      var ratioOfMatchingTraits = amountOfMatchingTraits / numberOfOpinionDimensions;
+        for ( var i = 0; i < numberOfOpinionDimensions; i ++ ) {
+          if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
+            amountOfMatchingTraits ++;
+          }
+          else {
+            unsimilarTraitIndices.push(i)
+          }
+        }
 
-      if (ratioOfMatchingTraits > 0 // neighbors have to agree at least on one feature for an interaction to happen
-        && ratioOfMatchingTraits < 1 // should disagree at least on one feature, otherwise the interaction will have no effect
-        && Math.random() <= ratioOfMatchingTraits) // higher ratio of matching traits = higher likelihood of interaction
-      {
-        // pick a random one of the traits that the neighbors don't have in common yet
-        // and set it on the neighbor so that it is the same as on the random cell
-        var randomUnsimilarTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
-        cellTraits[randomNeighborPosition][randomUnsimilarTraitIndex] = cellTraits[randomCellPosition][randomUnsimilarTraitIndex];
-        uiReference.setState({ cellTraits: cellTraits });
-        uiReference.forceUpdate();
+        var ratioOfMatchingTraits = amountOfMatchingTraits / numberOfOpinionDimensions;
+
+        if (ratioOfMatchingTraits > 0 // neighbors have to agree at least on one feature for an interaction to happen
+          && ratioOfMatchingTraits < 1 // should disagree at least on one feature, otherwise the interaction will have no effect
+          && Math.random() <= ratioOfMatchingTraits) // higher ratio of matching traits = higher likelihood of interaction
+        {
+          // pick a random one of the traits that the neighbors don't have in common yet
+          // and set it on the neighbor so that it is the same as on the random cell
+          var randomUnsimilarTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
+          cellTraits[randomNeighborPosition][randomUnsimilarTraitIndex] = cellTraits[randomCellPosition][randomUnsimilarTraitIndex];
+        }
       }
 
       if (isSimulationRunning) {
+        uiReference.setState({ cellTraits: cellTraits });
+        uiReference.forceUpdate();
         timeout = setTimeout(runSimulationStep, getTimestep(), uiReference, cellTraits);
       }
     }
