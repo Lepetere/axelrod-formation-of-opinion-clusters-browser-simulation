@@ -104,19 +104,20 @@ APP.UI = (function () {
         "called trait, about a limited amount of opinion dimensions, called features. You can consider those cells " +
         "being individuals in a society. If you press 'start simulation', " +
         "they will influence each other and exchange opinions after the algorithm suggested by Robert Axelrod.",
-        description_pt3 = "You can read how it works in detail in my blog post at http://www.peterfessel.com/tbd",
+        description_pt3 = "You can read how it works in detail in my blog post at ",
+        blogLink = "http://www.peterfessel.com/2016/01/modeling-formation-of-opinion-clusters-cellular-automata/",
         description_pt4 = "This is built for Firefox and Chrome. Use one of those browsers to make sure everything runs smoothly.";
 
       return (
-        React.DOM.a({
+        React.DOM.span({
             id: 'about-tooltip',
             className: 'about-tooltip tooltip text-button'
           }, "What is this?",
           React.DOM.span({ className: 'tooltip-content' },
             description_pt1, React.DOM.br(), React.DOM.br(),
             description_pt2, React.DOM.br(), React.DOM.br(),
-            description_pt3, React.DOM.br(), React.DOM.br(),
-            description_pt4))
+            description_pt3, React.DOM.a({ href: blogLink, target: '_blank'}, blogLink),
+            React.DOM.br(), React.DOM.br(), description_pt4))
       );
     }
   });
