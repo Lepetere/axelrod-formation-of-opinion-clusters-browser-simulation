@@ -142,14 +142,15 @@ APP.simulation = (function () {
    * This function modifies the 'cellTraits' state of the uiReference (top level ui component).
    */
   var runSimulationStep = function (uiReference, cellTraits) {
-    var randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
+    var numberOfOpinionDimensions = getNumberOfOpinionDimensions(),
+      randomCellPosition = Math.floor(Math.random() * getNumberOfGridCells()),
       randomNeighborPosition = getNeighborPositions(randomCellPosition)[Math.floor(Math.random() * 4)], // 4 neighbors
       amountOfMatchingTraits = 0,
       unsimilarTraitIndices = [],
       ratioOfMatchingTraits;
 
     try {
-      for ( var i = 0; i < getNumberOfOpinionDimensions(); i ++ ) {
+      for ( var i = 0; i < numberOfOpinionDimensions; i ++ ) {
         if (cellTraits[randomCellPosition][i] === cellTraits[randomNeighborPosition][i]) {
           amountOfMatchingTraits ++;
         }
@@ -158,13 +159,16 @@ APP.simulation = (function () {
         }
       }
 
-      var ratioOfMatchingTraits = amountOfMatchingTraits / getNumberOfOpinionDimensions();
+      var ratioOfMatchingTraits = amountOfMatchingTraits / numberOfOpinionDimensions;
 
-      if (unsimilarTraitIndices.length && Math.random() <= ratioOfMatchingTraits) {
+      if (ratioOfMatchingTraits > 0 // neighbors have to agree at least on one feature for an interaction to happen
+        && ratioOfMatchingTraits < 1 // should disagree at least on one feature, otherwise the interaction will have no effect
+        && Math.random() <= ratioOfMatchingTraits) // higher ratio of matching traits = higher likelihood of interaction
+      {
         // pick a random one of the traits that the neighbors don't have in common yet
         // and set it on the neighbor so that it is the same as on the random cell
-        var unsimilarRandomTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
-        cellTraits[randomNeighborPosition][unsimilarRandomTraitIndex] = cellTraits[randomCellPosition][unsimilarRandomTraitIndex];
+        var randomUnsimilarTraitIndex = unsimilarTraitIndices[Math.floor(Math.random() * unsimilarTraitIndices.length)];
+        cellTraits[randomNeighborPosition][randomUnsimilarTraitIndex] = cellTraits[randomCellPosition][randomUnsimilarTraitIndex];
         uiReference.setState({ cellTraits: cellTraits });
         uiReference.forceUpdate();
       }

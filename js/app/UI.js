@@ -130,7 +130,7 @@ APP.UI = (function () {
       var description_pt1 = "Use the above toggles to change the simulation's properties and see how they influence the " +
         "outcome. Note that changing the number of opinion dimensions and traits as well as the grid size will " +
         "restart the simulation.",
-        description_pt2 = "Changing the timestep will increase or descrease the speed of the simulation and is also " +
+        description_pt2 = "Changing the timestep will increase or decrease the speed of the simulation and is also " +
         "possible while the simulation is running.";
 
       return (
