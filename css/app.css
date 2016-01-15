@@ -35,6 +35,10 @@ select:focus {
 
 /* ---- display rules ---- */
 
+.grid {
+  border: 1px solid #EFEFEF;
+}
+
 .text-button {
   font-weight: bold;
   font-size: 0.85em;
@@ -46,8 +50,8 @@ select:focus {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-top: -250px;
-  margin-left: -250px;
+  margin-top: -251px;
+  margin-left: -251px;
 }
 
 .center-button-container {
