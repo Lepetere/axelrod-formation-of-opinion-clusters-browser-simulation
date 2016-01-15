@@ -37,7 +37,7 @@ APP.UI = (function () {
         });
 
         ratioOfMatchingTraits = amountOfMatchingTraits / (APP.simulation.getNumberOfOpinionDimensions() * 4); // 4 neighbors
-        traitTone = tones[Math.floor(ratioOfMatchingTraits * 16)];
+        traitTone = tones[Math.floor(ratioOfMatchingTraits * 15)];
         return '#' + traitTone + traitTone + traitTone;
       }
     },
